@@ -7,80 +7,80 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
-
-type task struct {
-	ID      int    `json:ID`
-	Name    string `json:Name`
-	Content string `json:Content`
+type pc struct {
+	ID   int    `json:ID`
+	Name string `json:Name`
+	Cpu  string `json:Cpu`
 }
 
-type allTasks []task
+type allPcs []pc
 
-var tasks = allTasks{
+var pcs = allPcs{
 	{
-		ID:      1,
-		Name:    "Task One",
-		Content: "Some Content",
+		ID:   1,
+		Name: "Ips",
+		Cpu:  "Intel i5 5700k",
 	},
 }
 
-func getTasks(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(tasks)
+func getPcs(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(pcs)
 	w.Header().Set("Content-Type", "application/json")
 }
 
-func createTask(w http.ResponseWriter, r *http.Request) {
-	var newTask task
+func createPc(w http.ResponseWriter, r *http.Request) {
+	var newPc pc
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Insert a valid task")
 	}
 
-	json.Unmarshal(reqBody, &newTask)
+	json.Unmarshal(reqBody, &newPc)
 
-	newTask.ID = len(tasks) + 1
-	tasks = append(tasks, newTask)
+	newPc.ID = len(pcs) + 1
+	pcs = append(pcs, newPc)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newTask)
+	json.NewEncoder(w).Encode(newPc)
 
 }
 
-func getTask(w http.ResponseWriter, r *http.Request) {
+func getPc(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	taskID, err := strconv.Atoi(vars["id"])
+	pcID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		fmt.Fprintf(w, "Invalid ID")
 		return
 	}
 
-	for _, task := range tasks {
-		if task.ID == taskID {
+	for _, pc := range pcs {
+		if pc.ID == pcID {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(task)
+			json.NewEncoder(w).Encode(pc)
 		}
 	}
 
 }
 
-func deleteTask(w http.ResponseWriter, r *http.Request) {
+func deletePc(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	taskID, err := strconv.Atoi(vars["id"])
+	pcID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		fmt.Fprintf(w, "invalid ID")
 		return
 	}
 
-	for i, task := range tasks {
-		if task.ID == taskID {
-			tasks = append(tasks[:i], tasks[i+1:]...)
-			fmt.Fprintf(w, "The tasks was delete succesfully")
+	for i, pc := range pcs {
+		if pc.ID == pcID {
+			pcs = append(pcs[:i], pcs[i+1:]...)
+			fmt.Fprintf(w, "The pcs was delete succesfully")
 		}
 	}
 }
@@ -94,9 +94,9 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", indexRoute)
-	router.HandleFunc("/tasks", getTasks).Methods("GET")
-	router.HandleFunc("/tasks", createTask).Methods("POST")
-	router.HandleFunc("/tasks/{id}", getTask).Methods("GET")
-	router.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
+	router.HandleFunc("/pcs", getPcs).Methods("GET")
+	router.HandleFunc("/pcs", createPc).Methods("POST")
+	router.HandleFunc("/pcs/{id}", getPc).Methods("GET")
+	router.HandleFunc("/pcs/{id}", deletePc).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
