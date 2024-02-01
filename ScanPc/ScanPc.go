@@ -9,74 +9,153 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
-func ScanRam() {
+func ScanTotalRam() uint64 {
 	memInfo, err := mem.VirtualMemory()
 	if err != nil {
 		fmt.Println("Error al obtener información de la memoria RAM:", err)
-		return
 	}
 
-	fmt.Printf("Memoria RAM Total: %v GB\n", memInfo.Total/1024/1024/1024)
-	fmt.Printf("Memoria RAM Libre: %v GB\n", memInfo.Free/1024/1024/1024)
-	fmt.Printf("Memoria RAM Usada: %v GB\n", memInfo.Used/1024/1024/1024)
-	fmt.Printf("Porcentaje de Uso: %f%%\n", memInfo.UsedPercent)
+	var totalRam = memInfo.Total / 1024 / 1024 / 1024
+
+	return totalRam
+
 }
 
-func ScanCpu() {
+func ScanFreeRam() uint64 {
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error al obtener información de la memoria RAM:", err)
+	}
+
+	var freeRam = memInfo.Free / 1024 / 1024 / 1024
+
+	return freeRam
+}
+
+func ScanUsedRam() uint64 {
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error al obtener información de la memoria RAM:", err)
+	}
+
+	var usedRam = memInfo.Used / 1024 / 1024 / 1024
+
+	return usedRam
+}
+
+func ScanPercentRam() float64 {
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error al obtener información de la memoria RAM:", err)
+	}
+
+	var percentRam = memInfo.UsedPercent
+
+	return percentRam
+
+}
+
+func ScanCpuName() string {
 	cpuInfo, err := cpu.Info()
 	if err != nil {
 		fmt.Println("Error al obtener información de la CPU:", err)
-		return
 	}
 
-	fmt.Println("------------------------------")
-	fmt.Printf("CPU: %s\n", cpuInfo[0].ModelName)
-	fmt.Printf("Número de núcleos: %d\n", cpuInfo[0].Cores)
-	fmt.Println("Frecuencia: ", cpuInfo[0].Mhz, "Mhz")
-	fmt.Println("------------------------------")
+	var cpuName = cpuInfo[0].ModelName
+
+	return cpuName
+
 }
 
-func ScanHostName() {
+func ScanCpuCores() int32 {
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		fmt.Println("Error al obtener información de la CPU:", err)
+	}
+	var cpuCores = cpuInfo[0].Cores / 2
+
+	return cpuCores
+
+}
+
+func ScanCpuCache() int32 {
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		fmt.Println("Error al obtener información de la CPU:", err)
+	}
+	var cpuCores = cpuInfo[0].CacheSize
+
+	return cpuCores
+
+}
+
+func ScanCpuThreads() int32 {
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		fmt.Println("Error al obtener información de la CPU:", err)
+	}
+	var cpuThreads = cpuInfo[0].Cores
+
+	return cpuThreads
+
+}
+
+func ScanCpuFrecuency() float64 {
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		fmt.Println("Error al obtener información de la CPU:", err)
+	}
+	var cpuFrecuency = cpuInfo[0].Mhz
+
+	return cpuFrecuency
+
+}
+
+func ScanHostName() string {
 	hostInfo, err := host.Info()
 	if err != nil {
 		fmt.Println("Error al obtener información de la placa madre:", err)
-		return
 	}
 
-	fmt.Println("------------------------------")
-	fmt.Println("Nombre del equipo:", hostInfo.Hostname)
+	var hostName = hostInfo.Hostname
 
-	fmt.Println("------------------------------")
+	return hostName
 }
 
-func ScanIp() {
+func ScanIps() string {
 
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		fmt.Println("Error al obtener direcciones IP:", err)
-		return
 	}
+
+	var IPS string
 
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				fmt.Println("Dirección IP:", ipnet.IP.String())
+
+				IPS = IPS + ipnet.IP.String() + "/"
 			}
 		}
 	}
 
+	return IPS
 }
 
 func ScanPc() {
+	fmt.Println("------------------------------")
+	ScanCpuName()
+	fmt.Println("------------------------------")
 
-	ScanCpu()
-	ScanRam()
+	fmt.Println("------------------------------")
 	ScanHostName()
-	ScanIp()
-
+	fmt.Println("------------------------------")
+	ScanIps()
+	fmt.Println("------------------------------")
 }
 
 func main() {
-	ScanPc()
+	fmt.Println(ScanCpuCache())
 
 }
