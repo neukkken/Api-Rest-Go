@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -155,7 +156,25 @@ func ScanPc() {
 	fmt.Println("------------------------------")
 }
 
+func GenPassword (CharNum int){
+	var arrayChar = []string{"q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z", "x", "c", "v", "b", "n", "m", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Z", "X", "C", "V", "B", "N", "M", "!", "@", "#", "$", "%", "^", "&", "*", "-", "_", "+", "=", "<", ">", "/", "?", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
+
+	var passLen = CharNum
+	var password string
+
+	for i := 0; i < passLen; i++ {
+		randomNumber := rand.Intn(len(arrayChar))
+
+		password = password + arrayChar[randomNumber]
+	}
+
+	fmt.Println("Passwoord Generated!")
+	fmt.Println(password)
+}
+
+
+
 func main() {
-	fmt.Println(ScanCpuCache())
+
 
 }
