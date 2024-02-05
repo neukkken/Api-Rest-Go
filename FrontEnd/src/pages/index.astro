@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+
+const req = await fetch('http://localhost:3000/pcs')
+const data = await req.json()
+
+console.log(data)
+console.log(data[0].PcName)
+---
+
+<Layout title="Welcome to Astro.">
+	
+		<Card PcName={data[0].PcName} Cpu={data[0].CpuName} Ram={data[0].TotalRam} ip={data[0].PcIPS} , href={data[0].CpuName} title='Your Pc'>
+			
+		</Card>
+	
+</Layout>
+
+<style>
+
+	
+	
+</style>
