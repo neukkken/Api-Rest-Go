@@ -13,6 +13,8 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/elastic/go-elasticsearch/v8"
+    "github.com/elastic/go-elasticsearch/v8/esapi"
 )
 
 type pc struct {
@@ -241,5 +243,29 @@ func main() {
 	router.HandleFunc("/pcs/{id}", getPc).Methods("GET")
 	router.HandleFunc("/pcs/{id}", deletePc).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":3000", router))
+
+	cfg := elasticsearch.Config{
+        Addresses: []string{
+            "http://localhost:9200", // Cambia esta dirección si Elasticsearch se está ejecutando en otro lugar.
+        },
+    }
+    es, err := elasticsearch.NewClient(cfg)
+    if err != nil {
+        log.Fatalf("Error creating the client: %s", err)
+    }
+
+    // Realizar una solicitud de ejemplo para obtener información sobre el nodo Elasticsearch.
+    res, err := es.Info()
+    if err != nil {
+        log.Fatalf("Error getting response: %s", err)
+    }
+    defer res.Body.Close()
+
+    if res.IsError() {
+        log.Fatalf("Error: %s", res.Status())
+    }
+
+    fmt.Println("Elasticsearch response:")
+    fmt.Println(res.String())
 
 }
