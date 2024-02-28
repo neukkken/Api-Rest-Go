@@ -8,13 +8,17 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-
+	"bytes"
+	
 	"github.com/gorilla/mux"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/elastic/go-elasticsearch/v8"
-    "github.com/elastic/go-elasticsearch/v8/esapi"
+    
+	
+	
+	"crypto/tls"
 )
 
 type pc struct {
@@ -235,37 +239,58 @@ func indexRoute(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	router := mux.NewRouter().StrictSlash(true)
+	// router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", indexRoute)
-	router.HandleFunc("/pcs", getPcs).Methods("GET")
-	router.HandleFunc("/pcs", createPc).Methods("POST")
-	router.HandleFunc("/pcs/{id}", getPc).Methods("GET")
-	router.HandleFunc("/pcs/{id}", deletePc).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":3000", router))
+	// router.HandleFunc("/", indexRoute)
+	// router.HandleFunc("/pcs", getPcs).Methods("GET")
+	// router.HandleFunc("/pcs", createPc).Methods("POST")
+	// router.HandleFunc("/pcs/{id}", getPc).Methods("GET")
+	// router.HandleFunc("/pcs/{id}", deletePc).Methods("DELETE")
+	// log.Fatal(http.ListenAndServe(":3000", router))                                                
+// Aquí está tu configuración inicial para la conexión a Elasticsearch
+cfg := elasticsearch.Config{
+	Addresses: []string{"https://localhost:9200"},
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,    
+		},
+	},
+	Username: "elastic",
+	Password: "xIkLoSDW8Z5EcuXpsXIv",
+}
 
-	cfg := elasticsearch.Config{
-        Addresses: []string{
-            "http://localhost:9200", // Cambia esta dirección si Elasticsearch se está ejecutando en otro lugar.
-        },
-    }
-    es, err := elasticsearch.NewClient(cfg)
-    if err != nil {
-        log.Fatalf("Error creating the client: %s", err)
-    }
+// Crear un cliente Elasticsearch
+es, err := elasticsearch.NewClient(cfg)
+if err != nil {
+	log.Fatalf("Error creating the client: %s", err)
+}
 
-    // Realizar una solicitud de ejemplo para obtener información sobre el nodo Elasticsearch.
-    res, err := es.Info()
-    if err != nil {
-        log.Fatalf("Error getting response: %s", err)
-    }
-    defer res.Body.Close()
+// Datos para indexar en Elasticsearch
+data := map[string]interface{}{
+	"cpu": ScanCpuName(),
+	"ram": ScanTotalRam(),
+	"ips": ScanIps(),
+}
 
-    if res.IsError() {
-        log.Fatalf("Error: %s", res.Status())
-    }
+// Convertir los datos a formato JSON
+jsonData, err := json.Marshal(data)
+if err != nil {
+	log.Fatalf("Error al convertir los datos a JSON: %s", err)
+}
 
-    fmt.Println("Elasticsearch response:")
-    fmt.Println(res.String())
+// Indexar el documento en Elasticsearch
+res, err := es.Index("pcs", bytes.NewReader(jsonData))
+if err != nil {
+	log.Fatalf("Error indexing document: %s", err)
+}
+defer res.Body.Close()
+
+// Verificar el código de estado de la respuesta
+if res.IsError() {
+	log.Fatalf("Error al indexar documento: %s", res.Status()) 
+}
+
+log.Println("Documento indexado exitosamente!")
+
 
 }

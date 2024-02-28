@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+
+        let username = 'elastic';
+        let password = 'xIkLoSDW8Z5EcuXpsXIv"';
+
+        fetch('http://localhost:9200/pcs/_search', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Authorization': 'Basic ' + btoa(username + ':' + password)
+            }
+        })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+
+
+    </script>
+</body>
+
+</html>
